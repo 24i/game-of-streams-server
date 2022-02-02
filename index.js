@@ -36,22 +36,36 @@ const calculatePointsForuser = {
 }
 
 // config
-app.get('/login', async (req, res) => {
-	fakeDb[Date.now()] = { text: 'hello world' };
-	await express.request('http://www.google.com/');
-	const response = await axios.post(
-		'https://backstage-api.com/user/login',
-		{ password: "qwerty123456", username: "johndoe@example.com" },
+app.get('/users/login', async (req, res) => {
+	const { username, password } = req.query;
+	const token = await getToken(username, password);
+	const response = await axios.get(
+		'https://backstage-api.com/user',
 		{
 			headers: {
 				'Content-Type': 'application/json',
 				'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
-				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028'
-
+				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028',
+				Authorization: `Bearer ${token}`,
 			}
 		}
 	);
-	res.send(response.data);
+	try {
+	const profiles = await axios.get(
+		'https://backstage-api.com/user/profiles',
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
+				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028',
+				Authorization: `Bearer ${token}`,
+			}
+		}
+	);
+	res.json({ ...response.data.user, profile: profiles.data.find(profile => profile.selected) });
+	} catch (e) {
+		console.log(e);
+	}
 });
 
 const getToken = async (username = 'johndoe@example.com', password = 'qwerty123456') => {
@@ -94,7 +108,6 @@ app.get('/users/:userId/points/', async (req, res) => {
 
 app.get('/users/:userId/lastwatched/', async (req, res) => {
 	const { username, password } = req.query;
-	console.log(username, password);
 	const token = await getToken(username, password);
 	const response = await axios.get(
 		'https://backstage-api.com/playlists/watch-history',
