@@ -1,6 +1,5 @@
 import bodyParser from 'body-parser';
 import express from 'express';
-import Stripe from 'stripe';
 import axios from 'axios';
 
 const app = express();
@@ -55,14 +54,14 @@ app.get('/login', async (req, res) => {
 	res.send(response.data);
 });
 
-const getUserDbEntry = (req) => {
-	const entry = fakeDb[req.body.userId];
-	if (!entry) fakeDb[req.body.userId] = {};
-	return fakeDb[req.body.userId];
+const getUserDbEntry = (userId) => {
+	const entry = fakeDb[userId];
+	if (!entry) fakeDb[userId] = {};
+	return fakeDb[userId];
 }
 
 app.post('/event', async (req, res) => {
-	const userDatabaseEntry = getUserDbEntry(req);
+	const userDatabaseEntry = getUserDbEntry(req.body.userId);
 	const timeFromLastHeartbeat = req.body.timestamp - (userDatabaseEntry.lastEventTimeStamp || req.body.timestamp);
 	userDatabaseEntry.lastEventTimeStamp = req.body.timestamp;
 	userDatabaseEntry.totalTimeWatched = timeFromLastHeartbeat + (userDatabaseEntry.totalTimeWatched || 0);
