@@ -66,14 +66,14 @@ app.post('/event', async (req, res) => {
 	const timeFromLastHeartbeat = req.body.timestamp - (userDatabaseEntry.lastEventTimeStamp || req.body.timestamp);
 	userDatabaseEntry.lastEventTimeStamp = req.body.timestamp;
 	userDatabaseEntry.totalTimeWatched = timeFromLastHeartbeat + (userDatabaseEntry.totalTimeWatched || 0);
-	console.log(userDatabaseEntry);
+	const points  =  Math.round(userDatabaseEntry.totalTimeWatched / 100);
+	userDatabaseEntry.totalPoints = points;
 	res.status(200).send('OK');
 });
 
 app.get('/users/:userId/points/', async (req, res) => {
 	const userDatabaseEntry = getUserDbEntry(req.params.userId);
-	const points  =  Math.round(userDatabaseEntry.totalTimeWatched / 100);
-	res.json({ pointValue: points });
+	res.json({ pointValue: userDatabaseEntry.points || 0 });
 });
 
 app.get('/users', async (req, res) => {
