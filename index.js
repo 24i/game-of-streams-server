@@ -38,21 +38,37 @@ const calculatePointsForuser = {
 // config
 app.get('/login', async (req, res) => {
 	fakeDb[Date.now()] = { text: 'hello world' };
-	// await express.request('http://www.google.com/');
-	// const response = await axios.post(
-	// 	'https://backstage-api.com/user/login',
-	// 	{ password: "qwerty123456", username: "johndoe@example.com" },
-	// 	{
-	// 		headers: {
-	// 			'Content-Type': 'application/json',
-	// 			'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
-	// 			'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028'
+	await express.request('http://www.google.com/');
+	const response = await axios.post(
+		'https://backstage-api.com/user/login',
+		{ password: "qwerty123456", username: "johndoe@example.com" },
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
+				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028'
 
-	// 		}
-	// 	}
-	// );
+			}
+		}
+	);
 	res.send(response.data);
 });
+
+const getToken = async (username = 'johndoe@example.com', password = 'qwerty123456') => {
+	const response = await axios.post(
+		'https://backstage-api.com/user/login',
+		{ password, username},
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
+				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028'
+
+			}
+		}
+	);
+	return response.data.token;
+}
 
 const getUserDbEntry = (userId) => {
 	const entry = fakeDb[userId];
@@ -74,6 +90,29 @@ app.post('/event', async (req, res) => {
 app.get('/users/:userId/points/', async (req, res) => {
 	const userDatabaseEntry = getUserDbEntry(req.params.userId);
 	res.json({ pointValue: userDatabaseEntry.points || 0 });
+});
+
+app.get('/users/:userId/lastwatched/', async (req, res) => {
+	const { username, password } = req.query;
+	console.log(username, password);
+	const token = await getToken(username, password);
+	const response = await axios.get(
+		'https://backstage-api.com/playlists/watch-history',
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'x-service-id': '5e0ad1b0-515e-11e9-a7ed-371ac744bd33',
+				'x-application-id': '67eae630-d7ec-11ea-9077-3fff30e06028',
+				Authorization: `Bearer ${token}`,
+			}
+		}
+	);
+	return res.json(response.data.items);
+});
+
+app.get('/users/:userId/', async (req, res) => {
+	const userDatabaseEntry = getUserDbEntry(req.params.userId);
+	res.json({ userDatabaseEntry });
 });
 
 app.get('/users', async (req, res) => {
