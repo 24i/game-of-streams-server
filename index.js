@@ -62,10 +62,11 @@ const getUserDbEntry = (userId) => {
 
 app.post('/event', async (req, res) => {
 	const userDatabaseEntry = getUserDbEntry(req.body.userId);
+	userDatabaseEntry.userDetails = req.body.user;
 	const timeFromLastHeartbeat = req.body.timestamp - (userDatabaseEntry.lastEventTimeStamp || req.body.timestamp);
 	userDatabaseEntry.lastEventTimeStamp = req.body.timestamp;
 	userDatabaseEntry.totalTimeWatched = timeFromLastHeartbeat + (userDatabaseEntry.totalTimeWatched || 0);
-	console.log(userDatabaseEntry.totalTimeWatched);
+	console.log(userDatabaseEntry);
 	res.status(200).send('OK');
 });
 
@@ -73,6 +74,11 @@ app.get('/users/:userId/points/', async (req, res) => {
 	const userDatabaseEntry = getUserDbEntry(req.params.userId);
 	const points  =  Math.round(userDatabaseEntry.totalTimeWatched / 100);
 	res.json({ pointValue: points });
+});
+
+app.get('/users', async (req, res) => {
+	const values = Object.values(fakeDb);
+	res.json(values);
 });
 
 app.get('/user/events', async (req, res) => {
