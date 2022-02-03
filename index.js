@@ -30,7 +30,10 @@ app.listen(port, () => {
 	console.log(`Pealock server listening at http://localhost:${port}`);
 });
 
-const fakeDb = dbSnapshot.map(user => ({ ...user , lastEventTimeStamp: null }));
+const fakeDb = dbSnapshot.reduce((acc, user) => {
+	acc[user.userDetails?.id || 0] = { ...user , lastEventTimeStamp: null };
+	return acc;
+}, {});
 
 app.get('/users/detail', async (req, res) => {
 	const { username, password } = req.query;
@@ -101,7 +104,7 @@ app.post('/event', async (req, res) => {
 
 app.get('/users/:userId/points/', async (req, res) => {
 	const userDatabaseEntry = getUserDbEntry(req.params.userId);
-	res.json({ pointValue: userDatabaseEntry.points || 0 });
+	res.json({ pointValue: userDatabaseEntry.totalPoints || 0 });
 });
 
 app.get('/users/:userId/lastwatched/', async (req, res) => {
