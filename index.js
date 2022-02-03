@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const app = express();
 
-const pauseTrashHold = 5 * 1000;
+const PAUSE_TRESHOLD = 6 * 1000;
 
 app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*');
@@ -31,12 +31,7 @@ app.listen(port, () => {
 
 const fakeDb = {};
 
-const calculatePointsForuser = {
-
-}
-
-// config
-app.get('/users/login', async (req, res) => {
+app.get('/users/detail', async (req, res) => {
 	const { username, password } = req.query;
 	const token = await getToken(username, password);
 	const response = await axios.get(
@@ -95,7 +90,9 @@ app.post('/event', async (req, res) => {
 	userDatabaseEntry.userDetails = req.body.user;
 	const timeFromLastHeartbeat = req.body.timestamp - (userDatabaseEntry.lastEventTimeStamp || req.body.timestamp);
 	userDatabaseEntry.lastEventTimeStamp = req.body.timestamp;
-	userDatabaseEntry.totalTimeWatched = timeFromLastHeartbeat + (userDatabaseEntry.totalTimeWatched || 0);
+	if (timeFromLastHeartbeat < PAUSE_TRESHOLD) {
+		userDatabaseEntry.totalTimeWatched = timeFromLastHeartbeat + (userDatabaseEntry.totalTimeWatched || 0);
+	}
 	const points  =  Math.round(userDatabaseEntry.totalTimeWatched / 100);
 	userDatabaseEntry.totalPoints = points;
 	res.status(200).send('OK');
