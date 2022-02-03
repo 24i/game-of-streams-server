@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import axios from 'axios';
+import dbSnapshot from './db-snapshot.js';
 
 const app = express();
 
@@ -29,7 +30,7 @@ app.listen(port, () => {
 	console.log(`Pealock server listening at http://localhost:${port}`);
 });
 
-const fakeDb = {};
+const fakeDb = dbSnapshot.map(user => ({ ...user , lastEventTimeStamp: null }));
 
 app.get('/users/detail', async (req, res) => {
 	const { username, password } = req.query;
