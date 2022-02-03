@@ -35,7 +35,7 @@ const fakeDb = dbSnapshot.reduce((acc, user) => {
 	return acc;
 }, {});
 
-app.get('/users/detail', async (req, res) => {
+app.get('/users/detail', async (req, res, next) => {
 	const { username, password } = req.query;
 	const token = await getToken(username, password);
 	const response = await axios.get(
@@ -48,7 +48,7 @@ app.get('/users/detail', async (req, res) => {
 				Authorization: `Bearer ${token}`,
 			}
 		}
-	);
+	).catch(next);
 	try {
 	const profiles = await axios.get(
 		'https://backstage-api.com/user/profiles',
@@ -60,7 +60,7 @@ app.get('/users/detail', async (req, res) => {
 				Authorization: `Bearer ${token}`,
 			}
 		}
-	);
+	).catch(next);
 	res.json({ ...response.data.user, profile: profiles.data.find(profile => profile.selected) });
 	} catch (e) {
 		console.log(e);
@@ -79,7 +79,7 @@ const getToken = async (username = 'johndoe@example.com', password = 'qwerty1234
 
 			}
 		}
-	);
+	).catch(next);
 	return response.data.token;
 }
 
@@ -120,7 +120,7 @@ app.get('/users/:userId/lastwatched/', async (req, res) => {
 				Authorization: `Bearer ${token}`,
 			}
 		}
-	);
+	).catch(next);
 	return res.json(response.data.items);
 });
 
