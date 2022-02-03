@@ -79,7 +79,7 @@ const getToken = async (username = 'johndoe@example.com', password = 'qwerty1234
 
 			}
 		}
-	).catch(next);
+	);
 	return response.data.token;
 }
 
@@ -107,7 +107,7 @@ app.get('/users/:userId/points/', async (req, res) => {
 	res.json({ pointValue: userDatabaseEntry.totalPoints || 0 });
 });
 
-app.get('/users/:userId/lastwatched/', async (req, res) => {
+app.get('/users/:userId/lastwatched/', async (req, res, next) => {
 	const { username, password } = req.query;
 	const token = await getToken(username, password);
 	const response = await axios.get(
